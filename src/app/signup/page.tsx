@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
@@ -71,6 +72,7 @@ function Signup() {
         value={user.password}
         onChange={(e) => setUser({ ...user, password: e.target.value })}
         type="text"
+        placeholder="password"
       />
       <button
         onClick={onSignup}
