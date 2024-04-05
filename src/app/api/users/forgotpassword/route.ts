@@ -9,25 +9,30 @@ connect();
 export async function POST(request: NextRequest) {
   try {
     const reqBody = await request.json();
-    const { email, password } = reqBody;
+    const { token, newPassword } = reqBody;
 
-    if (!password || !email) {
+    if (!newPassword) {
       return NextResponse.json(
-        { error: "Please fill the entry" },
+        { error: "Please provide new password" },
         { status: 400 }
       );
     }
 
-    const user = await User.findOne({ email });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 400 });
+    if (!token) {
+      return NextResponse.json({ error: "token not found" }, { status: 400 });
     }
 
-    await sendEmail({ email, emailType: "RESET", userId: user._id });
+    const user = await User.findOne({
+      forgotPasswordToken: token,
+      forgotPasswordTokenExpiry: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "Invalid token" }, { status: 400 });
+    }
 
     const salt = await bcryptjs.genSalt(10);
-    const hashedPassword = await bcryptjs.hash(password, salt);
+    const hashedPassword = await bcryptjs.hash(newPassword, salt);
 
     user.password = hashedPassword;
 

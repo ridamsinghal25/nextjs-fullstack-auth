@@ -2,23 +2,26 @@
 
 import axios from "axios";
 import Link from "next/link";
-import React, { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import React, { useEffect, useState } from "react";
 
 function ForgotPasswordPage() {
-  const [user, setUser] = useState({
-    email: "",
-    password: "",
+  const searchParams = useSearchParams();
+  const [data, setData] = useState<any>({
+    oldPassword: "",
+    newPassword: "",
+    token: "",
   });
-  const [message, setMessage] = useState(false);
+  const [successMessage, setSuccessMessage] = useState(false);
   const [error, setError] = useState(false);
 
   const updatePassword = async function () {
     try {
       setError(false);
-      const newPassword = await axios.post("/api/users/forgotpassword", user);
+      const newPassword = await axios.post("/api/users/forgotpassword", data);
 
       if (newPassword) {
-        setMessage(true);
+        setSuccessMessage(true);
       }
     } catch (error) {
       setError(true);
@@ -26,22 +29,22 @@ function ForgotPasswordPage() {
     }
   };
 
+  useEffect(() => {
+    const token = searchParams.get("token");
+    if (token) {
+      setData({ ...data, token });
+    }
+  }, []);
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen py-2">
-      <h1 className="text-4xl mb-5">Change Password</h1>
+      <h1 className="text-4xl mb-5">Update Password</h1>
       <input
-        value={user.email}
+        value={data.newPassword}
         className="p-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:border-gray-600 text-black"
-        onChange={(e) => setUser({ ...user, email: e.target.value })}
-        type="text"
-        placeholder="email"
-      />
-      <input
-        value={user.password}
-        className="p-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:border-gray-600 text-black"
-        onChange={(e) => setUser({ ...user, password: e.target.value })}
+        onChange={(e) => setData({ ...data, newPassword: e.target.value })}
         type="password"
-        placeholder="password"
+        placeholder="new password"
       />
       <button
         onClick={updatePassword}
@@ -49,14 +52,12 @@ function ForgotPasswordPage() {
       >
         Update Password
       </button>
-      {message ? (
+      {successMessage && (
         <div>
           <h3>Password Changed successfully</h3>
           <br />
           <Link href="/profile">Visit Profile page</Link>
         </div>
-      ) : (
-        "Change password"
       )}
       {error && (
         <div>
@@ -68,11 +69,3 @@ function ForgotPasswordPage() {
 }
 
 export default ForgotPasswordPage;
-
-// import React from "react";
-
-// function page() {
-//   return <div>Forgot password</div>;
-// }
-
-// export default page;
